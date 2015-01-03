@@ -1,0 +1,13 @@
+.container {
+    max-width: 500px;
+    padding-top: 20px;
+}
+input {
+    max-width: 250px;
+}
+.avatar {
+    max-width: 150px;
+}
+h1 {
+    color: blue;
+}
