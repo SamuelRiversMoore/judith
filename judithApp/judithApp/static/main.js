@@ -1,52 +1,72 @@
 
 $(document).ready(function() {
-  console.log("ready!");
-
-  $('#try-again').hide();
-
   // on form submission ...
+  chitchat("judith", "Salut!" );
+
   $('form').on('submit', function() {
-
-    console.log("the form has beeen submitted");
-
     // grab values
-    valueOne = $('input[name="location"]').val();
-//    valueTwo = $('input[name="language"]').val(); 
-//    console.log(valueOne, valueTwo)
-    console.log(valueOne)
+    userStr = $('input[name="user"]').val();
+    chitchat("user", userStr );
+    $('input[name="user"]').val('');
 
     $.ajax({
       type: "POST",
       url: "/",
-      data : { 'first': valueOne },
+      data : { 'first': userStr },
       success: function(results) {
-        $('#results').append('<p>'+results+'</p>');
+        chitchat("judith", results );
       }
-
-      /*success: function(results) {
-        if (results.items.length > 0) {
-          $('input').hide();
-          $('#try-again').show();
-          var randNum = Math.floor(Math.random() * Object.keys(results.items).length)
-          console.log(results.items[randNum]);
-          $('#results').html('<a href="'+results.items[randNum].html_url+'">'+results.items[randNum].login+
-              '</a><br><img src="'+results.items[randNum].avatar_url+'" class="avatar">')
-          // $('input').val('')
-        } else {
-          $('#results').html('Something went terribly wrong! Please try again.')
-        }
-      },
-      error: function(error) {
-        console.log(error)
-      }*/
     });
-
   });
-
-  $('#try-again').on('click', function(){
-    $('input').val('').show();
-    $('#try-again').hide();
-    $('#results').html('');
-  });
-
 });
+
+var chitchat = function(talkerID, text){
+  if (text.indexOf("<-continuer->") >= 0){
+    text = text.split("<-continuer->")
+  }
+  if (talkerID == "user"){
+    reading = 0;
+    time = 0;
+  } else {
+    reading = 2000;
+    time = reading + text.length*150;
+    typing();
+  }
+  if (jQuery.type(text) == "string"){
+    setTimeout(function() {
+      $('<div class="message">'+text+'</div>').addClass(talkerID).hide().appendTo('#message-wrapper').fadeIn("fast");
+      console.log(text);
+      deleteMessage();
+      scrolling();
+    }, time);
+  }
+  if (jQuery.type(text) == "array"){
+    var count = 0
+    $.each(text, function() {
+      setTimeout(function() {
+        $('<div class="message">'+text[count]+'</div>').addClass(talkerID).hide().appendTo('#message-wrapper').fadeIn("fast");
+        console.log(text[count]);
+        deleteMessage();
+        scrolling();
+        count += 1
+      }, time);
+    });   
+  }
+}
+var typing = function(){
+  setTimeout(function() {
+    $('#typing').show();
+  }, reading);
+  setTimeout(function() {
+    $('#typing').hide();
+  }, time);      
+}
+var scrolling = function(){
+  $('#container').animate({ scrollTop: $(document).height() }, 100);
+}
+var deleteMessage = function(){
+  var messages = $('#message-wrapper').children('.message');
+  if ( messages.length > 15 ){
+    messages.first().remove();
+  }
+}

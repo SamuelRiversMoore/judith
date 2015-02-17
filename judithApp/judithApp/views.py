@@ -1,30 +1,41 @@
 
-#requests_cache.install_cache('github_cache', backend='sqlite', expire_after=180)
-import time
-import requests
-import requests_cache
-
-from flask import Flask, render_template, request, jsonify
+from flask import render_template, request, jsonify, redirect, url_for
 
 from judithApp import app
+from brain import read_db
 
+# fonctions : read / write / newfile / search / corrections 
+
+# get userline
 @app.route('/', methods=['GET', 'POST'])
 def home():
+	if request.method == 'POST':
+		while True:
+			# strip + add caps
+			user_line = request.form.get('first').strip()
+			print 'user : '+user_line
+
+			# check if line exists
+			response = read_db(user_line)
+
+			# post response
+			print 'rep : '+response
+			return response
+	return render_template('index.html')
+
+
+
+# route for handling the login page logic
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
     if request.method == 'POST':
-        first = request.form.get('first')
-        response = first
-        return response
-        # user inputs
-#        first = request.form.get('first')
-#        second = request.form.get('second')
-        # api call
-#        url = "https://api.github.com/search/users?q=location:{0}+language:{1}".format(first, second)
-#        now = time.ctime(int(time.time()))
-#        response = requests.get(url)
-#        print "Time: {0} / Used Cache: {1}".format(now, response.from_cache)
-        # return json
-#        return jsonify(response.json())
-    return render_template('index.html')
+        if request.form['username'] != 'admin' or request.form['password'] != 'admin':
+            error = 'Invalid Credentials. Please try again.'
+        else:
+            return redirect(url_for('home'))
+    return render_template('login.html', error=error)
+
 
 
 if __name__ == '__main__':
